@@ -5,9 +5,8 @@ from selenium.webdriver.chrome.service import Service
 import os
 import time
 import datetime
-import random
 
-class Apertiff:
+class Aperitif:
     
     def __init__(self, product_type: str = 'rødvin'):
         self.product_type = product_type.lower()
@@ -29,6 +28,7 @@ class Apertiff:
         options = webdriver.ChromeOptions()
         options.add_argument('headless')
         
+        wines_skipped = 0
         page = 1
         # retrieve elements from the page
         try:
@@ -49,14 +49,22 @@ class Apertiff:
             
                 for wine in wines:
                     # get product code
-                    product_code = int(wine.find('span', {'class': 'index'}).text[1:-1])
-                    
+                    try:
+                        product_code = int(wine.find('span', {'class': 'index'}).text[1:-1])
+                    except:
+                        wines_skipped += 1
+                        continue
+
+                                        
                     # get the name of the wine
                     name = wine.find('div', {'class': 'title'}).text.strip()
                     
                     # get the rating of the wine
-                    rating = int(wine.find('span', {'class': 'number'}).text)
-                    
+                    try:
+                        rating = int(wine.find('span', {'class': 'number'}).text)
+                    except:
+                        wines_skipped += 1
+                        continue
                     # format the data
                     product_name, year = self.format_product_name(name)
                     
@@ -84,6 +92,7 @@ class Apertiff:
             print(e)
         
         driver.quit()
+        print(f'Product code not found: {wines_skipped}')
         
     def format_product_name(self, name: str):
         name = name.split()
@@ -102,5 +111,5 @@ class Apertiff:
         
         
 if __name__ == '__main__':
-    apertiff = Apertiff('rødvin')
-    print(len(apertiff.dataframe))
+    aperitif = Aperitif('rødvin')
+    print(len(aperitif.dataframe))
